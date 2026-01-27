@@ -1,5 +1,6 @@
 # --- Binaries & Build Results ---
 # Binaries built by 'go build'
+scanner
 *.exe
 *.exe~
 *.dll

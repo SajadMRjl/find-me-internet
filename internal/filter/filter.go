@@ -2,9 +2,11 @@ package filter
 
 import (
 	"crypto/tls"
-	"find-me-internet/internal/model"
 	"net"
 	"time"
+	"strconv"
+	
+	"find-me-internet/internal/model"
 )
 
 // Pipeline represents the filter configuration
