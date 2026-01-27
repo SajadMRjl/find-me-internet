@@ -1,0 +1,56 @@
+# --- Binaries & Build Results ---
+# Binaries built by 'go build'
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries built with 'go test -c'
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+profile.out
+
+# --- Dependencies ---
+# Vendor directory: usually ignored if using Go Modules.
+# If you are strictly vendoring dependencies to commit them, comment this out.
+vendor/
+
+# --- Go Workspace ---
+# Go workspace file (introduced in Go 1.18)
+go.work
+go.work.sum
+
+# --- IDEs and Editors ---
+# JetBrains (GoLand, IntelliJ)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio Code
+.vscode/
+
+# Vim / Emacs
+*~
+*.swp
+*.swo
+
+# --- OS Specific ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Security ---
+# Environment variables file (NEVER commit secrets!)
+.env
+.env.local
