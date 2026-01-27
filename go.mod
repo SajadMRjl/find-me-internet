@@ -2,7 +2,11 @@ module find-me-internet
 
 go 1.25.6
 
-require github.com/gvcgo/vpnparser v0.2.7
+require (
+	github.com/gvcgo/vpnparser v0.2.7
+	github.com/joho/godotenv v1.5.1
+	github.com/kelseyhightower/envconfig v1.4.0
+)
 
 require (
 	atomicgo.dev/cursor v0.1.1 // indirect

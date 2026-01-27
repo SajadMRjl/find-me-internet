@@ -3,6 +3,7 @@ package tester
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -14,14 +15,13 @@ import (
 	"find-me-internet/internal/model"
 )
 
-// Runner handles the execution of Sing-box
 type Runner struct {
 	BinPath string
 	TestURL string
 	Timeout time.Duration
 }
 
-func NewRunner(binPath string, testURL string, timeout time.Duration) *Runner {
+func NewRunner(binPath, testURL string, timeout time.Duration) *Runner {
 	return &Runner{
 		BinPath: binPath,
 		TestURL: testURL,
@@ -29,73 +29,67 @@ func NewRunner(binPath string, testURL string, timeout time.Duration) *Runner {
 	}
 }
 
-// Test performs the full latency check
+// Test spins up a Sing-box instance and measures HTTP latency
 func (r *Runner) Test(p *model.Proxy) error {
-	// 1. Get a random free port
+	// 1. Acquire Local Port
 	port, err := getFreePort()
 	if err != nil {
-		return fmt.Errorf("no free ports: %v", err)
+		return fmt.Errorf("failed to get port: %w", err)
 	}
 
-	// 2. Generate Config
+	// 2. Generate Configuration
 	configData, err := GenerateConfig(p, port)
 	if err != nil {
 		return err
 	}
 
-	// 3. Write Config to Temp File
-	// specific name helps debugging if needed: config_<port>.json
-	configName := filepath.Join(os.TempDir(), fmt.Sprintf("sb_config_%d.json", port))
+	// 3. Write Config File
+	// Using a unique name prevents collisions in concurrent tests
+	configName := filepath.Join(os.TempDir(), fmt.Sprintf("sb_%d_%s.json", port, p.Address))
 	if err := os.WriteFile(configName, configData, 0644); err != nil {
 		return err
 	}
-	defer os.Remove(configName) // Cleanup after test
+	defer os.Remove(configName) // Cleanup
 
-	// 4. Start Sing-box Process
+	// 4. Execute Sing-box
 	ctx, cancel := context.WithTimeout(context.Background(), r.Timeout+2*time.Second)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, r.BinPath, "run", "-c", configName)
-	// cmd.Stdout = os.Stdout // Uncomment for debugging
-	// cmd.Stderr = os.Stderr
-	
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start sing-box: %v", err)
+		return fmt.Errorf("startup failed: %w", err)
 	}
-	
-	// Ensure process is killed when function exits
+
+	// Ensure cleanup happens even if panic occurs
 	defer func() {
 		if cmd.Process != nil {
-			cmd.Process.Kill()
+			_ = cmd.Process.Kill()
 		}
 	}()
 
-	// 5. Wait for Sing-box to initialize
-	// A smart retry loop is better than a fixed sleep
-	proxyReady := waitForPort(port, 2*time.Second)
-	if !proxyReady {
-		return fmt.Errorf("sing-box did not start in time")
+	// 5. Wait for Binding
+	if !waitForPort(port, 2*time.Second) {
+		return fmt.Errorf("sing-box failed to bind port %d", port)
 	}
 
-	// 6. Perform HTTP Latency Test
+	// 6. HTTP Latency Test
 	latency, err := r.measureLatency(port)
 	if err != nil {
+		slog.Debug("Latency test failed", "err", err, "proxy", p.Address)
 		return err
 	}
 
-	// 7. Success! Update the model
 	p.Latency = latency
 	return nil
 }
 
-// measureLatency makes the actual HTTP request
 func (r *Runner) measureLatency(port int) (time.Duration, error) {
 	proxyUrl, _ := url.Parse(fmt.Sprintf("http://127.0.0.1:%d", port))
 	
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(proxyUrl),
-			DisableKeepAlives: true,
+			DisableKeepAlives: true, // Force new connection
 		},
 		Timeout: r.Timeout,
 	}
@@ -107,15 +101,14 @@ func (r *Runner) measureLatency(port int) (time.Duration, error) {
 	}
 	defer resp.Body.Close()
 
-	// Check for valid response codes (200 OK or 204 No Content)
 	if resp.StatusCode != 200 && resp.StatusCode != 204 {
-		return 0, fmt.Errorf("bad status code: %d", resp.StatusCode)
+		return 0, fmt.Errorf("invalid status code: %d", resp.StatusCode)
 	}
 
 	return time.Since(start), nil
 }
 
-// Helpers
+// getFreePort asks the kernel for a random open port
 func getFreePort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
