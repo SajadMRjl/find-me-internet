@@ -22,60 +22,62 @@ type Runner struct {
 }
 
 func NewRunner(binPath, testURL string, timeout time.Duration) *Runner {
-	return &Runner{
-		BinPath: binPath,
-		TestURL: testURL,
-		Timeout: timeout,
-	}
+	return &Runner{BinPath: binPath, TestURL: testURL, Timeout: timeout}
 }
 
-// Test spins up a Sing-box instance and measures HTTP latency
 func (r *Runner) Test(p *model.Proxy) error {
-	// 1. Acquire Local Port
+	log := slog.With("target", p.Address, "sni", p.SNI)
+
+	// 1. Port Allocation
 	port, err := getFreePort()
 	if err != nil {
-		return fmt.Errorf("failed to get port: %w", err)
-	}
-
-	// 2. Generate Configuration
-	configData, err := GenerateConfig(p, port)
-	if err != nil {
+		log.Error("local_port_allocation_failed", "error", err)
 		return err
 	}
 
-	// 3. Write Config File
-	// Using a unique name prevents collisions in concurrent tests
+	// 2. Config Generation
+	configData, err := GenerateConfig(p, port)
+	if err != nil {
+		log.Error("config_generation_failed", "error", err)
+		return err
+	}
+
 	configName := filepath.Join(os.TempDir(), fmt.Sprintf("sb_%d_%s.json", port, p.Address))
 	if err := os.WriteFile(configName, configData, 0644); err != nil {
 		return err
 	}
-	defer os.Remove(configName) // Cleanup
+	defer os.Remove(configName)
 
-	// 4. Execute Sing-box
+	// 3. Process Execution
 	ctx, cancel := context.WithTimeout(context.Background(), r.Timeout+2*time.Second)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, r.BinPath, "run", "-c", configName)
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("startup failed: %w", err)
+		log.Error("singbox_process_start_failed", "error", err)
+		return err
 	}
 
-	// Ensure cleanup happens even if panic occurs
 	defer func() {
 		if cmd.Process != nil {
-			_ = cmd.Process.Kill()
+			cmd.Process.Kill()
 		}
 	}()
 
-	// 5. Wait for Binding
+	// 4. Wait for Binding
 	if !waitForPort(port, 2*time.Second) {
-		return fmt.Errorf("sing-box failed to bind port %d", port)
+		log.Debug("singbox_bind_timeout", "local_port", port)
+		return fmt.Errorf("process_bind_timeout")
 	}
 
-	// 6. HTTP Latency Test
+	// 5. HTTP Probe
+	startProbe := time.Now()
 	latency, err := r.measureLatency(port)
 	if err != nil {
-		slog.Debug("Latency test failed", "err", err, "proxy", p.Address)
+		log.Debug("http_probe_failed", 
+			"duration", time.Since(startProbe),
+			"error", err,
+		)
 		return err
 	}
 
@@ -85,11 +87,10 @@ func (r *Runner) Test(p *model.Proxy) error {
 
 func (r *Runner) measureLatency(port int) (time.Duration, error) {
 	proxyUrl, _ := url.Parse(fmt.Sprintf("http://127.0.0.1:%d", port))
-	
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(proxyUrl),
-			DisableKeepAlives: true, // Force new connection
+			DisableKeepAlives: true,
 		},
 		Timeout: r.Timeout,
 	}
@@ -101,23 +102,18 @@ func (r *Runner) measureLatency(port int) (time.Duration, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 && resp.StatusCode != 204 {
-		return 0, fmt.Errorf("invalid status code: %d", resp.StatusCode)
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return 0, fmt.Errorf("unexpected_status_code_%d", resp.StatusCode)
 	}
 
 	return time.Since(start), nil
 }
 
-// getFreePort asks the kernel for a random open port
 func getFreePort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, err
-	}
+	if err != nil { return 0, err }
 	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
+	if err != nil { return 0, err }
 	defer l.Close()
 	return l.Addr().(*net.TCPAddr).Port, nil
 }

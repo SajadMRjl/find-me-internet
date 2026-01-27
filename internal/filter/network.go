@@ -10,7 +10,6 @@ import (
 	"find-me-internet/internal/model"
 )
 
-// Pipeline manages the "Cheap Check" logic
 type Pipeline struct {
 	Timeout time.Duration
 }
@@ -19,31 +18,42 @@ func NewPipeline(timeout time.Duration) *Pipeline {
 	return &Pipeline{Timeout: timeout}
 }
 
-// Check runs a sequence of low-cost network tests.
-// Returns false immediately if any stage fails.
 func (f *Pipeline) Check(p *model.Proxy) bool {
-	// 1. Sanity Check
-	if p.Address == "" || p.Port == 0 {
-		return false
-	}
+	target := net.JoinHostPort(p.Address, strconv.Itoa(p.Port))
+	log := slog.With("target", target, "protocol", p.Type)
 
-	// 2. TCP Liveness (Is the port open?)
+	// 1. TCP Connectivity
+	start := time.Now()
 	if !f.checkTCP(p) {
-		slog.Debug("TCP Connection failed", "addr", p.Address, "port", p.Port)
+		log.Debug("tcp_connect_failed", "duration", time.Since(start))
 		p.IsOnline = false
 		return false
 	}
 	p.IsOnline = true
 
-	// 3. TLS Validity (Does it handshake?)
-	// Only required if SNI is present or port is standard HTTPS
-	if p.SNI != "" || p.Port == 443 {
-		if !f.checkTLS(p) {
-			slog.Debug("TLS Handshake failed", "addr", p.Address, "sni", p.SNI)
+	// 2. TLS Handshake
+	// Only proceed if protocol supports/requires TLS
+	shouldCheckTLS := p.SNI != "" || p.Port == 443 || p.Type == model.TypeVLESS || p.Type == model.TypeTrojan
+	
+	if shouldCheckTLS {
+		sni := p.SNI
+		if sni == "" {
+			sni = p.Address // Fallback for handshake
+		}
+
+		startTLS := time.Now()
+		if !f.checkTLS(p, sni) {
+			log.Debug("tls_handshake_failed", 
+				"sni", sni, 
+				"duration", time.Since(startTLS),
+			)
 			p.IsTLSSecure = false
 			return false
 		}
 		p.IsTLSSecure = true
+		log.Debug("network_checks_passed", "duration", time.Since(start))
+	} else {
+		log.Debug("network_checks_passed", "note", "tls_skipped_no_sni")
 	}
 
 	return true
@@ -59,20 +69,13 @@ func (f *Pipeline) checkTCP(p *model.Proxy) bool {
 	return true
 }
 
-func (f *Pipeline) checkTLS(p *model.Proxy) bool {
+func (f *Pipeline) checkTLS(p *model.Proxy, sni string) bool {
 	address := net.JoinHostPort(p.Address, strconv.Itoa(p.Port))
 	dialer := &net.Dialer{Timeout: f.Timeout}
 	
-	// We skip verification because many proxies use self-signed certs or Reality.
-	// The goal is to check if the server *speaks* TLS, not if the cert is trusted by Root CAs.
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
-		ServerName:         p.SNI,
-	}
-	
-	// Fallback SNI if none provided
-	if conf.ServerName == "" {
-		conf.ServerName = p.Address
+		ServerName:         sni,
 	}
 
 	conn, err := tls.DialWithDialer(dialer, "tcp", address, conf)

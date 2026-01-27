@@ -11,13 +11,10 @@ import (
 	"github.com/gvcgo/vpnparser/pkgs/outbound"
 )
 
-// tempConfig covers multiple locations where SNI might be hidden in the JSON
 type tempConfig struct {
 	Transport struct {
 		Type string `json:"type"`
 	} `json:"transport"`
-	
-	// Standard TLS
 	TLS struct {
 		ServerName string `json:"server_name"`
 	} `json:"tls"`
@@ -29,10 +26,11 @@ func ParseLink(raw string) (*model.Proxy, error) {
 		return nil, fmt.Errorf("empty link")
 	}
 
-	// 1. Parse using library
+	// 1. Library Parse
 	item := outbound.ParseRawUriToProxyItem(raw)
 	if item == nil {
-		return nil, fmt.Errorf("invalid link")
+		slog.Debug("parser_rejected_link", "reason", "invalid_structure", "raw_prefix", raw[:min(20, len(raw))])
+		return nil, fmt.Errorf("invalid link structure")
 	}
 
 	p := &model.Proxy{
@@ -41,11 +39,10 @@ func ParseLink(raw string) (*model.Proxy, error) {
 		Port:    item.Port,
 	}
 
-	// 2. Clean up Protocol (Fixing the "vless://" bug)
-	// Some versions of the lib return "vless://" instead of "vless"
+	// 2. Protocol Normalization
 	scheme := strings.ToLower(item.Scheme)
 	scheme = strings.TrimSuffix(scheme, "://")
-
+	
 	switch scheme {
 	case "vless":
 		p.Type = model.TypeVLESS
@@ -60,60 +57,62 @@ func ParseLink(raw string) (*model.Proxy, error) {
 		p.Type = model.TypeShadowsocks
 	default:
 		p.Type = model.TypeUnknown
-		slog.Warn("Unknown protocol", "scheme", scheme, "raw", item.Scheme)
+		slog.Warn("unknown_protocol_detected", "scheme", scheme, "target", p.Address)
 	}
 
-	// 3. Extract SNI (Fixing the "sni=" bug)
-	// We first try to get it from the standard fields
+	// 3. Deep Extraction (JSON)
+	extractionSource := "none"
 	if item.Outbound != "" {
 		var cfg tempConfig
 		if err := json.Unmarshal([]byte(item.Outbound), &cfg); err == nil {
 			p.Network = cfg.Transport.Type
 			p.SNI = cfg.TLS.ServerName
+			if p.Network != "" || p.SNI != "" {
+				extractionSource = "json_config"
+			}
 		}
 	}
 
-	// 4. Fallback for SNI (Crucial for Reality/VLESS)
-	// If JSON extraction failed, try to parse the raw URL query parameters manually.
-	// This is often more reliable than the JSON dump for simple fields.
+	// 4. Fallback Extraction (Query Params)
 	if p.SNI == "" {
-		// Quick and dirty manual check for "&sni=..." or "&peer=..."
 		if val := extractQueryParam(raw, "sni"); val != "" {
 			p.SNI = val
-		} else if val := extractQueryParam(raw, "peer"); val != "" {
-			p.SNI = val // "peer" is often used in Telegram proxies as SNI
+			extractionSource = "query_sni"
 		} else if val := extractQueryParam(raw, "host"); val != "" {
 			p.SNI = val
+			extractionSource = "query_host"
+		} else if val := extractQueryParam(raw, "peer"); val != "" {
+			p.SNI = val
+			extractionSource = "query_peer"
 		}
 	}
-	
-	// 5. Final Safety: Reality MUST have an SNI
-	// If we still don't have one, the TLS check will inevitably fail.
-	// We can warn here.
-	if p.Type == model.TypeVLESS && p.SNI == "" {
-		slog.Debug("Warning: VLESS proxy has no SNI", "addr", p.Address)
-	}
+
+	slog.Debug("proxy_parsed", 
+		"target", fmt.Sprintf("%s:%d", p.Address, p.Port),
+		"protocol", p.Type, 
+		"sni", p.SNI,
+		"sni_source", extractionSource,
+	)
 
 	return p, nil
 }
 
-// Helper to manually grab query params from the raw string
-// because sometimes the parser library logic is opaque.
 func extractQueryParam(url, key string) string {
-	// Find "key="
 	keyStr := key + "="
 	start := strings.Index(url, keyStr)
 	if start == -1 {
 		return ""
 	}
-	// Move to value start
 	start += len(keyStr)
-	
-	// Find end of value (either '&' or '#')
 	rest := url[start:]
 	end := strings.IndexAny(rest, "&#")
 	if end == -1 {
 		return rest
 	}
 	return rest[:end]
+}
+
+func min(a, b int) int {
+	if a < b { return a }
+	return b
 }

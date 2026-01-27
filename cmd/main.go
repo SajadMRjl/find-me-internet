@@ -54,32 +54,32 @@ func main() {
 			// Step A: Parse
 			proxy, err := parser.ParseLink(raw)
 			if err != nil {
-				slog.Debug("Parse failed", "err", err)
+				// Parser logs its own errors at DEBUG level
 				return
 			}
 
-			// Step B: Cheap Filter (TCP/TLS)
+			// Step B: Network Filter
 			if !netFilter.Check(proxy) {
-				// Failed cheap checks, discard silently or debug
+				// Filter logs specific failure reason (TCP/TLS) at DEBUG level
 				return
 			}
 
-			// Step C: Expensive Test (Sing-box)
-			semaphore <- struct{}{} // Acquire lock
+			// Step C: Integration Test
+			semaphore <- struct{}{}
 			err = boxRunner.Test(proxy)
-			<-semaphore             // Release lock
+			<-semaphore
 
 			if err != nil {
-				slog.Debug("Test failed", "proxy", proxy.Address, "err", err)
+				// Runner logs probe failures
 				return
 			}
 
-			// Success!
-			validCount++
-			slog.Info("Valid Proxy Found", 
-				"addr", proxy.Address, 
-				"latency", proxy.Latency.Milliseconds(), 
-				"type", proxy.Type,
+			// Success Log
+			slog.Info("proxy_verified", 
+				"target", proxy.Address, 
+				"protocol", proxy.Type,
+				"latency_ms", proxy.Latency.Milliseconds(),
+				"sni", proxy.SNI,
 			)
 
 		}(link)
