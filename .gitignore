@@ -8,6 +8,8 @@ scanner
 *.dylib
 data/
 data/*
+bin/
+bin/*
 
 
 # Test binaries built with 'go test -c'
