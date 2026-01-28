@@ -23,6 +23,7 @@ type Config struct {
 	InputPath   string `envconfig:"INPUT_PATH" default:"proxies.txt"`
 	OutputPath  string `envconfig:"OUTPUT_PATH" default:"valid.jsonl"`
 	GeoIPPath   string `envconfig:"GEOIP_PATH" default:"GeoLite2-Country.mmdb"`
+	TxtOutputPath string `envconfig:"TXT_OUTPUT_PATH" default:"valid.txt"`
 }
 
 // Load reads .env and processes environment variables

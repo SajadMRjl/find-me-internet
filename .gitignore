@@ -6,8 +6,8 @@ scanner
 *.dll
 *.so
 *.dylib
-data/
 data/*
+!data/valid_proxies.txt
 bin/
 bin/*
 

@@ -36,3 +36,29 @@ func (w *JSONLWriter) Write(p *model.Proxy) error {
 func (w *JSONLWriter) Close() {
 	w.file.Close()
 }
+
+
+type TextWriter struct {
+	file *os.File
+	mu   sync.Mutex
+}
+
+func NewText(path string) (*TextWriter, error) {
+	// We use O_APPEND | O_CREATE | O_WRONLY
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	return &TextWriter{file: f}, nil
+}
+
+func (w *TextWriter) Write(p *model.Proxy) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	
+	// Just write the RawLink + NewLine
+	_, err := w.file.WriteString(p.RawLink + "\n")
+	return err
+}
+
+func (w *TextWriter) Close() { w.file.Close() }

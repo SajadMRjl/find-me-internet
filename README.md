@@ -1,6 +1,8 @@
+Here is the updated `README.md` incorporating the new features (Smart Input, Dual Output) and configuration options.
+
 # Find Me Internet 🌐
 
-**Find Me Internet** is a high-performance, scalable proxy scanner and tester written in Go. It is designed to ingest thousands of proxy links (VLESS, VMess, Trojan, Reality, etc.), filter out dead nodes efficiently using "cheap" network checks, and rigorously test survivors using a real **Sing-box** core.
+**Find Me Internet** is a high-performance, scalable proxy scanner and tester written in Go. It is designed to ingest thousands of proxy links (VLESS, VMess, Trojan, Reality, etc.) from files or URLs, filter out dead nodes efficiently using "cheap" network checks, and rigorously test survivors using a real **Sing-box** core.
 
 It uses a "Funnel Architecture" to minimize resource usage, allowing it to scan 100,000+ proxies without crashing your system.
 
@@ -19,6 +21,7 @@ graph LR
     E -- Latency OK --> F(GeoIP Enricher)
     E -- Fail --> X
     F --> G[JSONL Sink]
+    F --> H[TXT Sink]
 
 ```
 
@@ -69,32 +72,58 @@ TEST_URL=http://cp.cloudflare.com  # The target to fetch
 
 # --- Paths ---
 SING_BOX_PATH=./bin/sing-box
-INPUT_PATH=./data/proxies.txt
-OUTPUT_PATH=./data/valid_proxies.jsonl
+INPUT_PATH=./data/proxies.txt            # Default input source
+OUTPUT_PATH=./data/valid_proxies.jsonl   # Detailed output
+TXT_OUTPUT_PATH=./data/valid_proxies.txt # Simple list output
 GEOIP_PATH=./data/GeoLite2-Country.mmdb
 
 ```
 
 ## 🏃 Usage
 
-1. **Prepare Input:**
-   Add your raw proxy links (one per line) to `data/proxies.txt`.
-2. **Run the Scanner:**
+You can run the scanner in three ways:
+
+### 1. Default Mode
+
+Reads the input path defined in your `.env` file (`INPUT_PATH`).
 
 ```bash
 go run cmd/main.go
 
 ```
 
-3. **View Results:**
-   Valid proxies are streamed to `data/valid_proxies.jsonl`.
+### 2. File Override
+
+Pass a specific local file path as an argument.
 
 ```bash
+go run cmd/main.go ./my_new_proxies.txt
+
+```
+
+### 3. URL Streaming
+
+Pass a URL (starting with `http://` or `https://`) to fetch and scan a remote subscription directly.
+
+```bash
+go run cmd/main.go https://raw.githubusercontent.com/example/proxies/main/list.txt
+
+```
+
+## 📊 Viewing Results
+
+The scanner generates two output files in your `data/` folder:
+
+1. **valid_proxies.txt**: A clean list of working proxy links, ready to copy-paste into V2Ray clients.
+2. **valid_proxies.jsonl**: Detailed JSON logs for analysis.
+
+```bash
+# Watch results in real-time
 tail -f data/valid_proxies.jsonl
 
 ```
 
-### Output Example
+### Output Example (JSONL)
 
 ```json
 {"link":"vless://uuid@1.2.3.4:443...","type":"vless","address":"1.2.3.4","port":443,"latency_ms":145,"country":"DE"}
