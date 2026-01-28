@@ -1,5 +1,3 @@
-Here is the updated `README.md` incorporating the new features (Smart Input, Dual Output) and configuration options.
-
 # Find Me Internet 🌐
 
 **Find Me Internet** is a high-performance, scalable proxy scanner and tester written in Go. It is designed to ingest thousands of proxy links (VLESS, VMess, Trojan, Reality, etc.) from files or URLs, filter out dead nodes efficiently using "cheap" network checks, and rigorously test survivors using a real **Sing-box** core.
@@ -109,6 +107,8 @@ Pass a URL (starting with `http://` or `https://`) to fetch and scan a remote su
 go run cmd/main.go https://raw.githubusercontent.com/example/proxies/main/list.txt
 
 ```
+
+
 
 ## 📊 Viewing Results
 
