@@ -46,21 +46,23 @@ func main() {
 	netFilter := filter.NewPipeline(cfg.TcpTimeout)
 	boxRunner := tester.NewRunner(cfg.SingBoxPath, cfg.TestURL, cfg.TestTimeout)
 
-	// 3. Input Stream (Example: reading from a local file 'proxies.txt')
-	// In production, you might loop through a list of URLs here
+	// 3. Input Stream
 	linkStream, err := source.LoadFromFile(cfg.InputPath)
 	if err != nil {
 		slog.Error("input_source_failed", "error", err)
 		os.Exit(1)
 	}
 
-	// 4. Worker Pool
+	// 4. Worker Pool & Counters
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, cfg.Workers)
 	
-	slog.Info("pipeline_started", "workers", cfg.Workers)
-
+	// Counters for final stats
 	countProcessed := 0
+	countValid := 0
+	var mu sync.Mutex // Protects countValid from race conditions
+	
+	slog.Info("pipeline_started", "workers", cfg.Workers)
 
 	// Main Loop
 loop:
@@ -110,22 +112,30 @@ loop:
 			// --- STAGE 6: SAVE ---
 			if err := resultsWriter.Write(proxy); err != nil {
 				slog.Error("write_failed", "error", err)
-			}
+			} else {
+				// Thread-Safe Increment
+				mu.Lock()
+				countValid++
+				mu.Unlock()
 
-			slog.Info("proxy_saved", 
-				"country", proxy.Country, 
-				"latency", proxy.Latency.Milliseconds(),
-				"type", proxy.Type,
-			)
+				slog.Info("proxy_saved", 
+					"country", proxy.Country, 
+					"latency", proxy.Latency.Milliseconds(),
+					"type", proxy.Type,
+				)
+			}
 
 		}(rawLink)
 		
 		countProcessed++
 		if countProcessed % 1000 == 0 {
-			slog.Info("progress_report", "processed", countProcessed)
+			slog.Info("progress_report", "processed", countProcessed, "valid_so_far", countValid)
 		}
 	}
 
 	wg.Wait()
-	slog.Info("scan_finished", "total_processed", countProcessed)
+	slog.Info("scan_finished", 
+		"total_processed", countProcessed, 
+		"total_valid", countValid,
+	)
 }
