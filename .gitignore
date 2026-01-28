@@ -8,6 +8,7 @@ scanner
 *.dylib
 data/*
 !data/valid_proxies.txt
+!data/alive_proxies.txt
 bin/
 bin/*
 

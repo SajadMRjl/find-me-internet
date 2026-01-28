@@ -3,6 +3,7 @@ package dedup
 import (
 	"fmt"
 	"sync"
+	"find-me-internet/internal/model"
 )
 
 type Filter struct {
@@ -16,9 +17,11 @@ func New() *Filter {
 	}
 }
 
-// Check returns true if the item is NEW (not seen before)
-func (f *Filter) Seen(address string, port int) bool {
-	key := fmt.Sprintf("%s:%d", address, port)
+// Seen checks if the proxy is new.
+// Key format: "vless://1.2.3.4:443"
+// This allows the same IP to be scanned again if it uses a different protocol.
+func (f *Filter) Seen(p *model.Proxy) bool {
+	key := fmt.Sprintf("%s://%s:%d", p.Type, p.Address, p.Port)
 	
 	f.mu.RLock()
 	_, exists := f.seen[key]

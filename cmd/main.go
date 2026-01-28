@@ -19,123 +19,103 @@ import (
 )
 
 func main() {
-	// 1. Init
+	// 1. Init & Config
 	cfg := config.Load()
 	logger.Setup(cfg.LogLevel)
+	if len(os.Args) > 1 { cfg.InputPath = os.Args[1] }
 	
-	// CLI Argument Override
-	// Usage: ./find-me-internet [OPTIONAL_INPUT_SOURCE]
-	if len(os.Args) > 1 {
-		cfg.InputPath = os.Args[1]
-		slog.Info("input_source_overridden", "source", cfg.InputPath)
-	}
+	// 2. Writers (Valid, Alive, Dataset)
+	validJson, _ := sink.NewJSONL(cfg.OutputPath)
+	defer validJson.Close()
+	validTxt, _ := sink.NewText(cfg.TxtOutputPath)
+	defer validTxt.Close()
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	aliveJson, _ := sink.NewJSONL(cfg.AliveOutputPath)
+	defer aliveJson.Close()
+	aliveTxt, _ := sink.NewText(cfg.AliveTxtOutputPath)
+	defer aliveTxt.Close()
 
-	// 2. Services
-	geoDB, err := geoip.Open(cfg.GeoIPPath)
-	if err != nil {
-		slog.Warn("geoip_db_missing", "error", err)
-	} else {
-		defer geoDB.Close()
-	}
+	datasetWriter, _ := sink.NewJSONL(cfg.DatasetOutputPath)
+	defer datasetWriter.Close()
 
-	jsonWriter, err := sink.NewJSONL(cfg.OutputPath)
-	if err != nil {
-		slog.Error("cannot_create_json_output", "error", err)
-		os.Exit(1)
-	}
-	defer jsonWriter.Close()
-
-	txtWriter, err := sink.NewText(cfg.TxtOutputPath)
-	if err != nil {
-		slog.Error("cannot_create_txt_output", "error", err)
-		os.Exit(1)
-	}
-	defer txtWriter.Close()
+	// 3. Services
+	geoDB, _ := geoip.Open(cfg.GeoIPPath)
+	if geoDB != nil { defer geoDB.Close() }
 
 	deduplicator := dedup.New()
 	netFilter := filter.NewPipeline(cfg.TcpTimeout)
 	boxRunner := tester.NewRunner(cfg.SingBoxPath, cfg.TestURL, cfg.TestTimeout)
-
-	// 3. Input Stream (Smart Load)
-	// Supports both http://... and ./path/to/file.txt
+	
+	// 4. Input Stream
 	linkStream, err := source.Load(cfg.InputPath)
-	if err != nil {
-		slog.Error("input_source_failed", "error", err, "path", cfg.InputPath)
-		os.Exit(1)
-	}
+	if err != nil { slog.Error("input_failed", "err", err); os.Exit(1) }
 
-	// 4. Worker Pool
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, cfg.Workers)
-	
-	countProcessed := 0
-	countValid := 0
-	var mu sync.Mutex
-	
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
 	slog.Info("pipeline_started", "workers", cfg.Workers)
 
-	// Main Loop
-loop:
 	for rawLink := range linkStream {
 		select {
 		case <-sigChan:
-			slog.Info("shutdown_signal_received", "msg", "finishing pending jobs...")
-			break loop
+			goto cleanup
 		default:
 		}
 
 		wg.Add(1)
 		go func(raw string) {
 			defer wg.Done()
-			
-			// A. Parse
+
+			// STEP 1: PARSE
 			proxy, err := parser.ParseLink(raw)
-			if err != nil { return }
+			if err != nil { return } // Cannot track unparseable junk
 
-			// B. Dedup
-			if deduplicator.Seen(proxy.Address, proxy.Port) { return }
+			// STEP 2: DEDUP
+			if deduplicator.Seen(proxy) { return }
 
-			// C. Filter
-			if !netFilter.Check(proxy) { return }
-
-			// D. Test
-			semaphore <- struct{}{}
-			err = boxRunner.Test(proxy)
-			<-semaphore
-
-			if err != nil { return }
-
-			// E. Enrich
+			// STEP 3: ENRICH (Country)
+			// We do this EARLY so even "Dead" proxies in the dataset have a Country label
 			if geoDB != nil {
 				proxy.Country = geoDB.Lookup(proxy.Address)
 			}
 
-			// F. Save
-			jsonWriter.Write(proxy)
-			txtWriter.Write(proxy)
+			// STEP 4: FILTER (Sets p.Status, p.FailureReason if fails)
+			if !netFilter.Check(proxy) {
+				// Proxy is DEAD. The Filter has already set:
+				// p.Status = "dead"
+				// p.FailureReason = "tcp_timeout" (etc)
+				datasetWriter.Write(proxy)
+				return
+			}
 
-			// Stats
-			mu.Lock()
-			countValid++
-			mu.Unlock()
+			// STEP 5: TEST (Sets p.Status, p.FailureReason if fails)
+			semaphore <- struct{}{}
+			err = boxRunner.Test(proxy)
+			<-semaphore
 
-			slog.Info("proxy_saved", 
-				"country", proxy.Country, 
-				"latency", proxy.Latency.Milliseconds(),
-				"type", proxy.Type,
-			)
+			if err != nil {
+				// Proxy is ALIVE (Semi-working). Runner has already set:
+				// p.Status = "alive"
+				// p.FailureReason = "http_error_502" (etc)
+				
+				aliveJson.Write(proxy)
+				aliveTxt.Write(proxy)
+				datasetWriter.Write(proxy)
+				return
+			}
+			
+			validJson.Write(proxy)
+			validTxt.Write(proxy)
+			datasetWriter.Write(proxy)
+
+			slog.Info("proxy_verified", "country", proxy.Country, "latency", proxy.Latency.Milliseconds())
 
 		}(rawLink)
-		
-		countProcessed++
-		if countProcessed % 1000 == 0 {
-			slog.Info("progress_report", "processed", countProcessed, "valid", countValid)
-		}
 	}
 
+cleanup:
 	wg.Wait()
-	slog.Info("scan_finished", "total_processed", countProcessed, "total_valid", countValid)
+	slog.Info("scan_finished")
 }

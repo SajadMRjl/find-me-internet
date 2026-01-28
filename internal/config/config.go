@@ -24,6 +24,9 @@ type Config struct {
 	OutputPath  string `envconfig:"OUTPUT_PATH" default:"valid.jsonl"`
 	GeoIPPath   string `envconfig:"GEOIP_PATH" default:"GeoLite2-Country.mmdb"`
 	TxtOutputPath string `envconfig:"TXT_OUTPUT_PATH" default:"valid.txt"`
+	AliveOutputPath string `envconfig:"ALIVE_OUTPUT_PATH" default:"alive.jsonl"`
+	AliveTxtOutputPath string `envconfig:"ALIVE_TXT_OUTPUT_PATH" default:"alive.txt"`
+	DatasetOutputPath  string `envconfig:"DATASET_OUTPUT_PATH" default:"dataset.jsonl"`
 }
 
 // Load reads .env and processes environment variables

@@ -2,7 +2,6 @@ package model
 
 import "time"
 
-// ProxyType defines the protocol (vless, vmess, etc.)
 type ProxyType string
 
 const (
@@ -13,25 +12,25 @@ const (
 	TypeUnknown ProxyType = "unknown"
 )
 
-// Proxy represents a single internet access point
 type Proxy struct {
-	// Identity
+	// --- Identity ---
 	RawLink string    `json:"link"`
 	Type    ProxyType `json:"type"`
+	Address string    `json:"address"`
+	Port    int       `json:"port"`
+	Network string    `json:"network"`
+	SNI     string    `json:"sni"`
 
-	// Connection Details
-	Address string `json:"address"` // IP or Domain
-	Port    int    `json:"port"`
-	UUID    string `json:"uuid"`    // Or Password
-	SNI     string `json:"sni"`     // TLS Server Name Indicator
-	Network string `json:"network"` // tcp, ws, grpc, h2
+	// --- Enrichment ---
+	Country string    `json:"country"` // e.g., "US", "IR", "DE"
 
-	// Filter Stage Results
-	IsOnline    bool `json:"is_online"`     // TCP Connect success
-	IsTLSSecure bool `json:"is_tls_secure"` // TLS Handshake success
-
-	// Tester Stage Results
+	// --- Metrics ---
 	Latency    time.Duration `json:"latency_ms"`
-	Country    string        `json:"country_code"`
-	PacketLoss float64       `json:"packet_loss"` // 0.0 to 1.0
+	IsOnline   bool          `json:"is_online"`    // TCP Connect Status
+	IsTLSSecure bool         `json:"is_tls_secure"` // TLS Handshake Status
+
+	// --- Data Collection (The fields you want filled) ---
+	Status        string `json:"status"`         // "valid", "alive", "dead"
+	FailureStage  string `json:"failure_stage"`  // "filter", "tester", "none"
+	FailureReason string `json:"failure_reason"` // "tcp_timeout", "http_502", "tls_error", etc.
 }

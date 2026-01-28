@@ -71,17 +71,20 @@ func (r *Runner) Test(p *model.Proxy) error {
 	}
 
 	// 5. HTTP Probe
-	startProbe := time.Now()
 	latency, err := r.measureLatency(port)
 	if err != nil {
-		log.Debug("http_probe_failed", 
-			"duration", time.Since(startProbe),
-			"error", err,
-		)
+		// SET THE MODEL VALUES HERE
+		p.Status = "alive" // It passed TCP, so it's "alive" but failed the test
+		p.FailureStage = "tester"
+		p.FailureReason = err.Error() // e.g., "http_timeout" or "status_502"
 		return err
 	}
 
+	// Success
 	p.Latency = latency
+	p.Status = "valid"
+	p.FailureStage = "none"
+	p.FailureReason = "none"
 	return nil
 }
 
@@ -95,15 +98,17 @@ func (r *Runner) measureLatency(port int) (time.Duration, error) {
 		Timeout: r.Timeout,
 	}
 
-	start := time.Now()
+	start := time.Now()	
 	resp, err := client.Get(r.TestURL)
-	if err != nil {
-		return 0, err
+	if err != nil {	
+		// Return specific error string for the model
+		return 0, fmt.Errorf("http_timeout_or_network_error")
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return 0, fmt.Errorf("unexpected_status_code_%d", resp.StatusCode)
+		// Return specific status code error
+		return 0, fmt.Errorf("http_error_%d", resp.StatusCode)
 	}
 
 	return time.Since(start), nil

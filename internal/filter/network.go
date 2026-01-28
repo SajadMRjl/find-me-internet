@@ -2,7 +2,6 @@ package filter
 
 import (
 	"crypto/tls"
-	"log/slog"
 	"net"
 	"strconv"
 	"time"
@@ -18,53 +17,46 @@ func NewPipeline(timeout time.Duration) *Pipeline {
 	return &Pipeline{Timeout: timeout}
 }
 
+// Check performs cheap checks and updates the Proxy model with results.
+// Returns true ONLY if all checks pass.
 func (f *Pipeline) Check(p *model.Proxy) bool {
-	target := net.JoinHostPort(p.Address, strconv.Itoa(p.Port))
-	log := slog.With("target", target, "protocol", p.Type)
-
-	// 1. TCP Connectivity
-	start := time.Now()
+	// 1. TCP Check
 	if !f.checkTCP(p) {
-		log.Debug("tcp_connect_failed", "duration", time.Since(start))
 		p.IsOnline = false
+		p.Status = "dead"
+		p.FailureStage = "filter"
+		p.FailureReason = "tcp_timeout_or_refused"
 		return false
 	}
 	p.IsOnline = true
 
-	// 2. TLS Handshake
-	// Only proceed if protocol supports/requires TLS
+	// 2. TLS Check
+	// Determine if TLS is required
 	shouldCheckTLS := p.SNI != "" || p.Port == 443 || p.Type == model.TypeVLESS || p.Type == model.TypeTrojan
 	
 	if shouldCheckTLS {
 		sni := p.SNI
-		if sni == "" {
-			sni = p.Address // Fallback for handshake
-		}
+		if sni == "" { sni = p.Address }
 
-		startTLS := time.Now()
 		if !f.checkTLS(p, sni) {
-			log.Debug("tls_handshake_failed", 
-				"sni", sni, 
-				"duration", time.Since(startTLS),
-			)
 			p.IsTLSSecure = false
+			p.Status = "dead"
+			p.FailureStage = "filter"
+			p.FailureReason = "tls_handshake_failed"
 			return false
 		}
 		p.IsTLSSecure = true
-		log.Debug("network_checks_passed", "duration", time.Since(start))
-	} else {
-		log.Debug("network_checks_passed", "note", "tls_skipped_no_sni")
 	}
 
+	// If we got here, it passed the filter stage
+	p.FailureStage = "none" 
 	return true
 }
 
 func (f *Pipeline) checkTCP(p *model.Proxy) bool {
 	address := net.JoinHostPort(p.Address, strconv.Itoa(p.Port))
 	conn, err := net.DialTimeout("tcp", address, f.Timeout)
-	if err != nil {
-		return false
-	}
+	if err != nil { return false }
 	conn.Close()
 	return true
 }
@@ -72,16 +64,9 @@ func (f *Pipeline) checkTCP(p *model.Proxy) bool {
 func (f *Pipeline) checkTLS(p *model.Proxy, sni string) bool {
 	address := net.JoinHostPort(p.Address, strconv.Itoa(p.Port))
 	dialer := &net.Dialer{Timeout: f.Timeout}
-	
-	conf := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         sni,
-	}
-
+	conf := &tls.Config{InsecureSkipVerify: true, ServerName: sni}
 	conn, err := tls.DialWithDialer(dialer, "tcp", address, conf)
-	if err != nil {
-		return false
-	}
+	if err != nil { return false }
 	conn.Close()
 	return true
 }
