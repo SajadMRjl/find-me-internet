@@ -3,70 +3,98 @@ package main
 import (
 	"log/slog"
 	"os"
+	"os/signal"
 	"sync"
-	"time"
+	"syscall"
 
 	"find-me-internet/internal/config"
+	"find-me-internet/internal/dedup"
 	"find-me-internet/internal/filter"
+	"find-me-internet/internal/geoip"
 	"find-me-internet/internal/logger"
 	"find-me-internet/internal/parser"
+	"find-me-internet/internal/sink"
+	"find-me-internet/internal/source"
 	"find-me-internet/internal/tester"
 )
 
 func main() {
-	// 1. Initialization
+	// 1. Init
 	cfg := config.Load()
 	logger.Setup(cfg.LogLevel)
+	
+	// Graceful Shutdown Channel
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	if _, err := os.Stat(cfg.SingBoxPath); os.IsNotExist(err) {
-		slog.Error("singbox_binary_missing", "path", cfg.SingBoxPath)
+	// 2. Services
+	geoDB, err := geoip.Open(cfg.GeoIPPath)
+	if err != nil {
+		slog.Warn("geoip_db_missing", "error", err, "msg", "Countries will be marked N/A")
+	} else {
+		defer geoDB.Close()
+	}
+
+	resultsWriter, err := sink.NewJSONL(cfg.OutputPath)
+	if err != nil {
+		slog.Error("cannot_create_output_file", "error", err)
 		os.Exit(1)
 	}
+	defer resultsWriter.Close()
 
-	slog.Info("scanner_started", "workers", cfg.Workers, "log_level", cfg.LogLevel)
-
-	// Mock Data
-	rawLinks := []string{
-		"vless://4525c260-df3c-4f62-b8f1-f4f5f305694b@66.81.247.155:443?encryption=none&security=tls&sni=yyzsuabw9e3qd5ud7ihi5dxm96oglnsvr83cjojnm1efncfhr9ucordq.zjde5.de5.net&fp=chrome&insecure=0&allowInsecure=0&type=ws&host=yyzsuabw9e3qd5ud7ihi5dxm96oglnsvr83cjojnm1efncfhr9ucordq.zjde5.de5.net&path=%2F%3Fed#%DA%86%D9%86%D9%84%20%D8%AA%D9%84%DA%AF%D8%B1%D8%A7%D9%85%20%3A%20%40CroSs_Guildd%F0%9F%92%8A",
-		"vless://efdb2890-6dd7-4e65-8984-f0b1d3ae4e01@here-we-go-again.embeddedonline.org:443?encryption=none&security=tls&sni=here-we-go-again.embeddedonline.org&fp=chrome&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=here-we-go-again.embeddedonline.org&path=%2FJ1jTS0GMxqS0Atmd5x#here-we-go-again.embeddedonline.org%20tls%20WS%20direct%20vless",
-		// Add more links here...
-	}
-
-	// 2. Pipelines
+	deduplicator := dedup.New()
 	netFilter := filter.NewPipeline(cfg.TcpTimeout)
 	boxRunner := tester.NewRunner(cfg.SingBoxPath, cfg.TestURL, cfg.TestTimeout)
 
-	// 3. Concurrency Control
+	// 3. Input Stream (Example: reading from a local file 'proxies.txt')
+	// In production, you might loop through a list of URLs here
+	linkStream, err := source.LoadFromFile(cfg.InputPath)
+	if err != nil {
+		slog.Error("input_source_failed", "error", err)
+		os.Exit(1)
+	}
+
+	// 4. Worker Pool
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, cfg.Workers)
+	
+	slog.Info("pipeline_started", "workers", cfg.Workers)
 
-	// 4. Thread-Safe Counter
-	var (
-		validCount int
-		mu         sync.Mutex // The lock protecting validCount
-	)
+	countProcessed := 0
 
-	startTotal := time.Now()
+	// Main Loop
+loop:
+	for rawLink := range linkStream {
+		select {
+		case <-sigChan:
+			slog.Info("shutdown_signal_received", "msg", "finishing pending jobs...")
+			break loop
+		default:
+			// Continue
+		}
 
-	for _, link := range rawLinks {
 		wg.Add(1)
-		
 		go func(raw string) {
 			defer wg.Done()
-
-			// Step A: Parse
+			
+			// --- STAGE 1: PARSE ---
 			proxy, err := parser.ParseLink(raw)
 			if err != nil {
 				return
 			}
 
-			// Step B: Filter
+			// --- STAGE 2: DEDUP ---
+			if deduplicator.Seen(proxy.Address, proxy.Port) {
+				return // Skip duplicates silently
+			}
+
+			// --- STAGE 3: FILTER ---
 			if !netFilter.Check(proxy) {
 				return
 			}
 
-			// Step C: Test
-			semaphore <- struct{}{}
+			// --- STAGE 4: TEST ---
+			semaphore <- struct{}{} // Rate limit expensive tests
 			err = boxRunner.Test(proxy)
 			<-semaphore
 
@@ -74,22 +102,30 @@ func main() {
 				return
 			}
 
-			mu.Lock()
-			validCount++
-			mu.Unlock()
+			// --- STAGE 5: ENRICH ---
+			if geoDB != nil {
+				proxy.Country = geoDB.Lookup(proxy.Address)
+			}
 
-			slog.Info("proxy_verified", 
-				"target", proxy.Address, 
-				"latency_ms", proxy.Latency.Milliseconds(),
+			// --- STAGE 6: SAVE ---
+			if err := resultsWriter.Write(proxy); err != nil {
+				slog.Error("write_failed", "error", err)
+			}
+
+			slog.Info("proxy_saved", 
+				"country", proxy.Country, 
+				"latency", proxy.Latency.Milliseconds(),
+				"type", proxy.Type,
 			)
 
-		}(link)
+		}(rawLink)
+		
+		countProcessed++
+		if countProcessed % 1000 == 0 {
+			slog.Info("progress_report", "processed", countProcessed)
+		}
 	}
 
 	wg.Wait()
-	slog.Info("scan_complete", 
-		"duration", time.Since(startTotal), 
-		"valid_count", validCount,
-		"total_scanned", len(rawLinks),
-	)
+	slog.Info("scan_finished", "total_processed", countProcessed)
 }

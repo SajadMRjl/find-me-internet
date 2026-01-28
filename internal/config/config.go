@@ -10,27 +10,29 @@ import (
 
 type Config struct {
 	// App Settings
-	LogLevel string `envconfig:"LOG_LEVEL" default:"INFO"` // INFO, DEBUG, ERROR
-	Workers  int    `envconfig:"MAX_WORKERS" default:"10"`
+	LogLevel string `envconfig:"LOG_LEVEL" default:"INFO"`
+	Workers  int    `envconfig:"MAX_WORKERS" default:"20"`
 
-	// Paths
+	// Network Logic
+	TestURL     string        `envconfig:"TEST_URL" default:"http://cp.cloudflare.com"`
+	TcpTimeout  time.Duration `envconfig:"TCP_TIMEOUT" default:"2s"`
+	TestTimeout time.Duration `envconfig:"TEST_TIMEOUT" default:"10s"`
+
+	// File System Paths
 	SingBoxPath string `envconfig:"SING_BOX_PATH" default:"./bin/sing-box"`
-	
-	// Testing Parameters
-	TestURL      string        `envconfig:"TEST_URL" default:"http://cp.cloudflare.com"`
-	TcpTimeout   time.Duration `envconfig:"TCP_TIMEOUT" default:"2s"`
-	TestTimeout  time.Duration `envconfig:"TEST_TIMEOUT" default:"10s"`
+	InputPath   string `envconfig:"INPUT_PATH" default:"proxies.txt"`
+	OutputPath  string `envconfig:"OUTPUT_PATH" default:"valid.jsonl"`
+	GeoIPPath   string `envconfig:"GEOIP_PATH" default:"GeoLite2-Country.mmdb"`
 }
 
-// Load reads .env and maps variables to Config struct
+// Load reads .env and processes environment variables
 func Load() *Config {
-	// 1. Try loading .env file (optional, for local dev)
+	// Silently ignore if .env is missing (production might use real ENV vars)
 	_ = godotenv.Load()
 
 	var cfg Config
-	// 2. Process environment variables
 	if err := envconfig.Process("", &cfg); err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.Fatalf("Configuration Error: %v", err)
 	}
 	return &cfg
 }

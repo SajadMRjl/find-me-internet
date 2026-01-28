@@ -6,6 +6,9 @@ scanner
 *.dll
 *.so
 *.dylib
+data/
+data/*
+
 
 # Test binaries built with 'go test -c'
 *.test
