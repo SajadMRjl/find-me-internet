@@ -45,7 +45,7 @@ type TextWriter struct {
 
 func NewText(path string) (*TextWriter, error) {
 	// We use O_APPEND | O_CREATE | O_WRONLY
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(path, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
