@@ -15,6 +15,7 @@ import (
 	"find-me-internet/internal/parser"
 	"find-me-internet/internal/sink"
 	"find-me-internet/internal/source"
+	"find-me-internet/internal/telegram"
 	"find-me-internet/internal/tester"
 )
 
@@ -24,14 +25,36 @@ func main() {
 	logger.Setup(cfg.LogLevel)
 	if len(os.Args) > 1 { cfg.InputPath = os.Args[1] }
 	
-	// 2. Writers (Valid, Alive, Dataset)
+	// 2. Initialize Telegram notifier if credentials are provided
+	var tgNotifier *telegram.Notifier
+	if cfg.TelegramBotToken != "" && cfg.TelegramChatID != "" {
+		tgNotifier = telegram.NewNotifier(cfg.TelegramBotToken, cfg.TelegramChatID)
+		slog.Info("Telegram notifier initialized", "chat_id", cfg.TelegramChatID)
+	} else {
+		slog.Info("Telegram notifier not configured, skipping")
+	}
+
+	// 3. Writers (Valid, Alive, Dataset)
 	validJson, _ := sink.NewJSONL(cfg.OutputPath)
-	defer validJson.Close()
+	defer func() {
+		validJson.Close()
+		// After closing the file, send its content to Telegram if configured
+		if tgNotifier != nil {
+			slog.Info("Sending valid proxies to Telegram...")
+			if err := tgNotifier.SendProxiesFromFile(cfg.TxtOutputPath); err != nil {
+				slog.Error("Failed to send proxies to Telegram", "error", err)
+			} else {
+				slog.Info("Successfully sent proxies to Telegram")
+			}
+		}
+	}()
+
 	validTxt, _ := sink.NewText(cfg.TxtOutputPath)
 	defer validTxt.Close()
 
 	aliveJson, _ := sink.NewJSONL(cfg.AliveOutputPath)
 	defer aliveJson.Close()
+
 	aliveTxt, _ := sink.NewText(cfg.AliveTxtOutputPath)
 	defer aliveTxt.Close()
 
