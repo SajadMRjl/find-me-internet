@@ -9,6 +9,7 @@ scanner
 data/*
 !data/valid_proxies.txt
 !data/alive_proxies.txt
+!data/subs.txt
 bin/
 bin/*
 

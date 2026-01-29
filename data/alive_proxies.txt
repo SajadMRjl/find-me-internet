@@ -1,45 +1,8 @@
-vless://b4bd0613-ff7c-4f2f-954d-185915e6ddad@216.239.38.120:443?path=%2F%40JavidnamanIran%2FJavid-SHAH-KingRezaPahlavi%2F&security=tls&encryption=none&insecure=0&host=o-cdn.igoii.org&type=ws&allowInsecure=0&sni=o-cdn.igoii.org#%F0%9F%86%98%EF%B8%8F%20%F0%9F%87%A9%F0%9F%87%AA%20-1
-vless://7abc75eb-b58b-4e28-af59-20f41bdf7a2a@dns.ownlink.pro:443?path=%2Frestart&security=tls&alpn=h2%2Chttp%2F1.1&encryption=none&insecure=0&host=last.ownlink.pro&fp=chrome&type=ws&allowInsecure=0&sni=last.ownlink.pro#4
-vless://33676069-bc5a-443c-bb64-14a215544f2b@deu711.deulucker.org:444?mode=auto&path=%2Fapi%2Fv1%2F&security=reality&encryption=none&pbk=BhTJ3phnq-Z-10aFKSsj1lzhA8mULR4L6leE4-0WTAs&fp=chrome&type=xhttp&sni=deu711.deulucker.org#@Vip_Security join us - 68
-vless://8c9b0290-c067-420b-db16-767bc97008a9@104.18.32.47:443?path=%2F%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config-%40Alfred_Config&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=website-game-film-ai-download.online-book.ir&fp=chrome&type=ws&allowInsecure=0&sni=website-game-film-ai-download.online-book.ir#%E2%81%B7%F0%9F%87%A9%F0%9F%87%AA%20%40vmesspv
-vless://4525c260-df3c-4f62-b8f1-f4f5f305694b@66.81.247.155:443?path=%2F%3Fed%3D2560&security=tls&encryption=none&insecure=0&host=yyzsuabw9e3qd5ud7ihi5dxm96oglnsvr83cjojnm1efncfhr9ucordq.zjde5.de5.net&type=ws&allowInsecure=0&sni=yyzsuabw9e3qd5ud7ihi5dxm96oglnsvr83cjojnm1efncfhr9ucordq.zjde5.de5.net#%F0%9F%8C%8E%20%40vmesspv
-vless://818ffdea-872c-43fe-adee-09d4e99a9ce6@8.6.112.0:2053?mode=auto&path=%2F&security=tls&alpn=h2%2Chttp%2F1.1&encryption=none&insecure=0&host=fast.spacenetpro.xyz&fp=chrome&type=xhttp&allowInsecure=0&sni=fast.spacenetpro.xyz#%F0%9F%87%A9%F0%9F%87%AA%20%40vmesspv
-vless://97458ace-6d8e-4c88-b6d1-47829dc88d89@188.114.98.0:2096?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=cdn.adobe-connect.top&fp=chrome&type=ws&allowInsecure=0&sni=cdn.adobe-connect.top#%F0%9F%87%A9%F0%9F%87%AA%20%40vmesspv
-vless://7d9e0e9b-3195-421f-9228-be763906a005@188.114.98.0:443?path=%2Fthisway&security=tls&alpn=h2%2Chttp%2F1.1&encryption=none&insecure=0&host=main.shieldpath.ir&fp=chrome&type=ws&allowInsecure=0&sni=main.shieldpath.ir#%F0%9F%87%A9%F0%9F%87%AA%20%40vmesspv
-trojan://humanity@172.64.152.23:443?path=%2Fassignment&security=tls&insecure=0&host=www.gossipglove.com&fp=chrome&type=ws&allowInsecure=0&sni=www.gossipglove.com#%F0%9F%87%AB%F0%9F%87%B7%20%40vmesspv
-vless://7718721f-2975-4d82-bdcd-ad92bd1dd779@mpc.mobayandeh.top:443?path=%2F%3Fed%3D2082&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=holcdn.wordperessweb.ir&fp=chrome&type=ws&allowInsecure=0&sni=holcdn.wordperessweb.ir#%F0%9F%87%B3%F0%9F%87%B1%20%40vmesspv
-vless://79df85dd-cb40-4b32-828e-f38d918d85e3@www.systemgamingirani.ir:2053?path=%2F%3Fed%3D2048&security=tls&encryption=none&insecure=1&fp=chrome&type=ws&allowInsecure=1&sni=retrieve-whois-data.wizardxray.net#%F0%9F%87%A9%F0%9F%87%AA%20%40vmesspv
-trojan://humanity@www.multiplydose.com:443?security=tls&sni=www.multiplydose.com&fp=chrome&type=ws&path=%2fassignment&allow_insecure=0#%f0%9f%87%ba%f0%9f%87%b8%20US%2012
-vless://46e863ca-dc3b-48cb-9b72-79a702eb1e48@188.114.98.0:8443?mode=auto&path=%2FTelegram%40vpnjeyTelegram%40vpnjeyTelegram%40vpnjeyTelegram%40vpnjey&security=tls&encryption=none&insecure=1&host=jey.dpdns.org&fp=chrome&type=xhttp&allowInsecure=1&sni=jey.dpdns.org#%F0%9F%9A%A6%F0%9F%87%A9%F0%9F%87%AA
-vless://c077a7aa-7ec8-4117-8ffc-9ade75a5efce@chatgpt.com:2096?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=cdn.sheriffbus.com&fp=chrome&type=ws&allowInsecure=0&sni=cdn.sheriffbus.com#@chthxyz - 72
-vless://c4426a36-247f-4abf-bf4e-e9ea0ed01c32@ip.ali.lat:2053?path=%2F&security=tls&alpn=h2%2Chttp%2F1.1&encryption=none&insecure=0&host=temp.ali.lat&type=ws&allowInsecure=0&sni=temp.ali.lat#@Vip_Security join us - 108
-trojan://91d237a0-8a03-11ee-b32f-1239d0255272@104.18.23.136:443?security=tls&sni=de1.test3.net&type=ws&path=/howdy&host=de1.test3.net#4Mohsen-4024
-vless://4eff2388-2092-4b0a-aa74-0e464889ffaf@109.73.206.90:443?security=reality&encryption=none&pbk=cTm0TIKL9qK550XICK2YroOSr1u-f12h5UmBw2EAr2c&headerType=none&fp=chrome&type=tcp&sni=google.com#4Mohsen-6288
-vless://f775978b-6e22-41a8-ae5e-5f9779e6745f@104.18.77.36:443?encryption=none&security=tls&sni=juzibaipiao.5112233.xyz&type=ws&host=juzibaipiao.5112233.xyz&path=%2f%3fed%3d2048#4Mohsen-8670
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.154.152:38388#4Mohsen-1103
-ss://cmM0LW1kNToxNGZGUHJiZXpFM0hEWnpzTU9yNg@172.105.199.111:8080#4Mohsen-3198
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.154.158:38388#4Mohsen-1109
-vless://fef4a93d-eb4f-4657-b56b-32a0dc060045@185.18.250.252:443?path=%2F&security=tls&encryption=none&insecure=0&host=dev.twistsparrow.xyz&type=ws&allowInsecure=0&sni=dev.twistsparrow.xyz#%F0%9F%87%AB%F0%9F%87%AE%20%40vmesspv
-vless://84ccd309-283a-49e8-b92c-8b9ecdae7f42@zzula.ir:443?path=%2F34.42.77.60%3D443&security=tls&encryption=none&insecure=1&host=cornsilk.qzz.io&type=ws&allowInsecure=1&sni=cornsilk.qzz.io#am
-vless://c659ce22-0a02-4d75-8c89-58d99916b846@cdn.halazzon.ir:2053?path=%2F&security=tls&encryption=none&insecure=0&host=ir6.hnbyme.online&fp=chrome&type=ws&allowInsecure=0&sni=ir6.hnbyme.online#%F0%9F%87%A9%F0%9F%87%AA%20%40vmesspv
-vless://c3540da5-6c0b-4d65-971f-97dfe9d58cbb@162.159.152.4:2087?path=%2F&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&insecure=0&fp=chrome&type=ws&allowInsecure=0&sni=cdnfr.adamedteb.com#%E2%81%B4%F0%9F%87%B3%F0%9F%87%B1%20%40vmesspv
-vless://b4bd0613-ff7c-4f2f-954d-185915e6ddad@www.speedtest.net:443?path=%2F%40JavidnamanIran%2FJavid-SHAH-KingRezaPahlavi%2F%3Fed%3D2560&security=tls&encryption=none&host=jnir-cdn.javidnaman.com&type=ws&sni=jnir-cdn.javidnaman.com#@chthxyz - 70
-ss://YWVzLTI1Ni1jZmI6ZjhmN2FDemNQS2JzRjhwMw==@79.127.227.53:989#%f0%9f%87%b3%f0%9f%87%b1%20NL%207
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpRQ1hEeHVEbFRUTUQ3anRnSFVqSW9q@193.29.139.199:8080#%f0%9f%87%b3%f0%9f%87%b1%20NL%201
-ss://YWVzLTI1Ni1jZmI6ZjhmN2FDemNQS2JzRjhwMw==@185.193.49.88:989#%f0%9f%87%aa%f0%9f%87%aa%20EE%201
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTplNzk5YjkwM2EzMmZjMWZl@51.161.32.44:13026#%f0%9f%87%a8%f0%9f%87%a6%20CA%203
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTphN2MyMDU2NDJiMzAyYzIw@5.188.4.103:11205#%f0%9f%87%a7%f0%9f%87%b7%20BR%201
-ss://YWVzLTI1Ni1nY206YjBjOWQ3NzUtMzJmNy00NTlhLWIyNGQtZWNkYTdjOWYzNzIw@ss.020.node-for-bigairport.win:11688#4Mohsen-2656
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpqZW9hUjFOcGUyZG9PaDR2cGpkbkFR@xcel999z.pet0er23mh21qq.com:1080#%f0%9f%87%a9%f0%9f%87%aa%20DE%201
-vless://00389a39-a57a-4083-a75b-37e9cfdbe178@chatgpt.com:443?mode=auto&path=%2Fcloudapi&security=tls&alpn=h2&encryption=none&extra=%7B%22scMaxEachPostBytes%22%3A%201000000%2C%20%22scMaxConcurrentPosts%22%3A%20100%2C%20%22scMinPostsIntervalMs%22%3A%2030%2C%20%22xPaddingBytes%22%3A%20%22100-1000%22%2C%20%22noGRPCHeader%22%3A%20false%7D&insecure=0&host=4.speedur.ir&fp=chrome&type=xhttp&allowInsecure=0&sni=4.speedur.ir#%F0%9F%87%A9%F0%9F%87%AA%20CF%20N2
-vless://dd0cfef0-fda9-47ec-8a65-49d7bc004f82@cf.narton.ir:443?path=%2Fvpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl-vpnowl%3Fed%3D2560&security=tls&alpn=h2&encryption=none&insecure=0&host=www.narton.ir&fp=firefox&type=ws&allowInsecure=0&sni=www.narton.ir#@chthxyz - 76
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.155.227:38388#4Mohsen-1354
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.155.67:38388#4Mohsen-1416
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.155.114:38388#4Mohsen-1285
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.154.14:38388#4Mohsen-1100
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.155.46:38388#4Mohsen-1393
-vless://32c257a1-f18c-42c7-860d-9cb0ead8b07c@cdn.sjdpictures.ir:443?path=%2F146.56.99.255%3D56789&security=tls&encryption=none&insecure=0&host=delta090.qzz.io&type=ws&allowInsecure=0&sni=delta090.qzz.io#@Vip_Security join us - 67
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.154.186:38388#4Mohsen-1138
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo2ZjkzMjA1Ny1mZmQ5LTQ0MjYtOGNhNy1mMDY1NGJhYmY4NGY@ddns.olucloud.subapi.cc:50001#4Mohsen-56
-ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.154.225:38388#4Mohsen-1181
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.89:8080#4Mohsen-794
+trojan://21c6c7cb-332b-4a0c-9ad7-dff9c3111442@104.21.19.64:443?security=tls&sni=us02web.zoom.us&type=tcp#4Jadi-3456
+vless://a61eb3a2-1adb-48cb-ab46-ce225769de16@5.161.47.151:443?security=tls&sni=ada70.fupaj.com&alpn=http/1.1&allowInsecure=1&type=ws&path=users?ed%3D2048&encryption=none#4Jadi-7874
+trojan://5623be5f-c9da-4511-81a9-b4b39b16edae@103.195.236.24:443?security=tls#4Jadi-3719
+vless://b4bd0613-ff7c-4f2f-954d-185915e6ddad@www.speedtest.net:443?path=%2F%40JavidnamanIran%2FJavid-SHAH-KingRezaPahlavi%2F%3Fed%3D2560&security=tls&encryption=none&host=jnir-cdn.javidnaman.com&type=ws&sni=jnir-cdn.javidnaman.com#@Vip_Security join us - 537
+ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.155.111:38388#4Jadi-1293
+ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.155.234:38388#4Jadi-1373
+ss://YWVzLTI1Ni1jZmI6cXdlclJFV1FAQA@p141.panda001.net:4652#4Jadi-1794
+ss://YWVzLTI1Ni1jZmI6WG44aktkbURNMDBJZU8lIyQjZkpBTXRzRUFFVU9wSC9ZV1l0WXFERm5UMFNW@103.186.155.226:38388#4Jadi-1364
