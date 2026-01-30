@@ -12,6 +12,7 @@ data/*
 !data/subs.txt
 bin/
 bin/*
+cron.log
 
 
 # Test binaries built with 'go test -c'

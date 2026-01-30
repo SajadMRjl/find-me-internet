@@ -19,7 +19,7 @@ type Config struct {
 	TestTimeout time.Duration `envconfig:"TEST_TIMEOUT" default:"10s"`
 
 	// File System Paths
-	SingBoxPath string `envconfig:"SING_BOX_PATH" default:"./bin/sing-box"`
+	SingBoxPath string `envconfig:"SING_BOX_PATH" default:"/usr/bin/sing-box"`
 	InputPath   string `envconfig:"INPUT_PATH" default:"proxies.txt"`
 	OutputPath  string `envconfig:"OUTPUT_PATH" default:"valid.jsonl"`
 	GeoIPPath   string `envconfig:"GEOIP_PATH" default:"GeoLite2-Country.mmdb"`
@@ -27,6 +27,10 @@ type Config struct {
 	AliveOutputPath string `envconfig:"ALIVE_OUTPUT_PATH" default:"alive.jsonl"`
 	AliveTxtOutputPath string `envconfig:"ALIVE_TXT_OUTPUT_PATH" default:"alive.txt"`
 	DatasetOutputPath  string `envconfig:"DATASET_OUTPUT_PATH" default:"dataset.jsonl"`
+
+	// Telegram Bot Settings
+	TelegramBotToken string `envconfig:"TELEGRAM_BOT_TOKEN"`
+	TelegramChatID   string `envconfig:"TELEGRAM_CHAT_ID"`
 }
 
 // Load reads .env and processes environment variables
